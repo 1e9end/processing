@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html> 
+ <head>
+    <title>Archive - Infected</title> 
+</head>
+<style>
+    html, body{
+        text-align: center;
+        font-family: sans-serif;
+    }
+    #mycanvas{
+        outline: black 1px solid;
+    }
+</style>
+ <body>
+    <h1>Infected</h1>
+    <p>Made in March 2020 (14yo)</p>
+    <p>This one was pretty good, actually</p>
+    <p align="center"> 
+      <canvas id="mycanvas"></canvas> 
+    </p>
+ </body>
+ 
+ <!-- Processing.js library -->
+ <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script> 
+ 
+ <script>
+    var sketchProc = function(processingInstance) {
+    with (processingInstance) {
+        size(750, 600); 
+        frameRate(30);
+        
+        /** IMPORTANT: This program is is completely fictional and just for fun. It in no ways should or was meant to influence any negative thoughts related to the COVID-19 pandemic
+        **//*
+            Be safe and wash your hands! :D
+            
+            *** If you're having trouble with a level, look on line 30. It will guide you through.
+            
+            Especially the later levels require some strategy
+        */
+        /**
+         * @CREDIT 
+         *  Thanks a ton to Bob Lyon for showing me the better JSON method for object deep copying!
+         * Levels 14 & 15 were designed by my friend
+         * 
+         * Infected
+         * > CSA Programming (now 1egend)
+         * 
+         * A platformer-shooter game
+         * 
+         * Started 3/20/2020
+         * Finished & Released 3/31/2020
+         * 
+         * **/
+        /**
+         * Solutions to the levels (ONLY READ IF YOU'RE STUCK!):
+         * 
+         * Starting on level 5, the previous are straightforward
+         * 
+         * LEVEL 5:
+         * 
+         * Grab the shotgun and shoot up twice to ensure the viruses are dead. Then use recoil to climb the steps and get to the portal.
+         * 
+         * LEVEL 6:
+         * 
+         * Quickly move forward as soon as you spawn, grab the shotgun, move back, and shoot your way through.
+         * 
+         * LEVEL 7:
+         * 
+         * Wait for some viruses to pass, then as soon as they all pass quickly jump up and to the portal.
+         * 
+         * LEVEL 8:
+         * 
+         * Just speed. Jump onto the platform, grab the toilet paper, jump to the step and left then up and go to the portal.
+         * 
+         * LEVEL 9:
+         * 
+         * This one requires careful movement. Just look at the spaces between the movements of the viruses and carefully jump through them towards the portal. Lots of viruses so you might get hurt, but use those golden toilet paper to heal
+         * 
+         * LEVEL 10:
+         * 
+         * This one might need practice.
+         * 
+         * Quickly grab the sniper, DONT grab the toilet paper. Then jump up and shoot, and come down to dodge, then go up to shoot again, then come down and so on till the enemies are dead. Use the toilet paper in between the shots so you get full use of it. Then run towards the portal.
+         * 
+         * LEVEL 11: 
+         * 
+         * AS FAST AS YOU CAN, run straight to the right, grabbing the golden toilet paper in midair on the jump. Then quickly run again towards the portal.
+         * 
+         * LEVEL 12:
+         * 
+         * This one might need practice.
+         * 
+         * You will need to snipe all the snipers with the method used in level 10. Then MOVE TO THE RIGHT, beside the portal, grab the golden paper for health. Then go to the far left and use your SNIPER to kill all the viruses. Quickly then change to the shotgun, go to the far right, and use recoil to get to the portal.
+         * 
+         * LEVEL 13:
+         * 
+         * THIS ONE IS FOOLING YOU! ;D
+         * 
+         * Follow the viruses into the hole. Then DONT wait for them and grab the guns, instead just move to the right, kill the sniper by jumping on him, while sacrificing some health, and jump to the portal. Health will be sufficient.
+         * 
+         * LEVEL 14:
+         * 
+         * Go right, take the needle. Go even further right, past the red enemies and kill the blue enemies. Use 1 of the golden toilet paper. Then go back and kill the red enemies with the needle. Now go down the hole and kill the underground blue enemies. Then go inside that cave and take the pills. Now use the pill recoil to climb back up that hole, go to the right, use a golden toilet paper, and recoil up to the portal.
+         * 
+         * LEVEL 15:
+         * 
+         * Basically same jump sniper duck method as level 10. But repeated.
+         * 
+         * LEVEL 16 (FINAL):
+         * 
+         * Go right and take one of the golden toilet paper. Use the needle and move left and right continously to dodge the bullets while using the needle to fight back. Once most enemies you can shoot at are shot, jump to the left and use the golden toilet paper on the ledge. Then jump up and down and shoot ALL the enemies. Now go back down and right, using the second stack of golden toilet paper, then grab the shotgun, and recoil yourself up to the portal.
+         * 
+        * **/
+          
+        var main = function(){
+            var transition = 0;
+            
+            // # Input Detection
+            var clicked = false;
+            var input = (function(){
+                var _code = {};
+                keyPressed = function(){
+                    _code[keyCode] = true;
+                };
+                keyReleased = function(){
+                    _code[keyCode] = false;
+                };
+                return {
+                    code: function(x){
+                        return _code[x];
+                    }
+                };    })();
+            
+
+            // # To jump levels, 
+            // # Change this to the desired level - 1
+            var mapNum = 16;
+            var maps = {
+                'Stay home and...' : {
+                        name: 'LvL 1: Tutorial',
+                       world: [
+                        '#',
+                        '# %',
+                        '#',
+                        '#                         #',
+                        '#                         #',
+                        '#                         #',
+                        '#                         #',
+                        '# T    T    T     T    T @#',
+                        '###########################',], 
+                        //['text', x, y]
+                        text: [['Oh no... I\'ve been infected!', 150, 400], ['I need to find a cure!', 500, 400], ['Oooh, flashy flashy!', 900, 400]], 
+                        sign: [,,'WASD/Arrows to move\nR to restart',,,,,'The infection will eat away your health!\nDont let your health bar go to 0!',,,,,'If you\'re having trouble,\nLook at line 30 in the code',,,,,,'Read the dialogue text\nto follow the story.\nAlso read the signs for clues and info.',,,,,'The portal will transport you\nto a place far far away...'],
+                        difficulty : 1/100
+                },
+                'Wash your hands' : {
+                        name: 'LvL 2: The plot thickens',
+                       world: [
+                        '#',
+                        '# %',
+                        '#',
+                        '#                 ',
+                        '#                         ',
+                        '#                         ',
+                        '#                         @',
+                        '#  T   #  <    <    <   < #',
+                        '###########################',], 
+                        //['text', x, y]
+                        text: [['A new place!\nHopefully the cure is here?', 150, 400], ['Eeek! What are those?', 400, 500], ['GROSS! Quick, send me away portal!', 900, 400]], 
+                        sign: [,,,'Stay away from viruses.\nThey will eat your health!'],
+                        difficulty: 1/15
+                },
+                'Don\'t hoard toilet paper' : {
+                    name: 'LvL 3: Back to the Classics',
+                       world: [
+                        '#                               T',
+                        '#                              ##',
+                        '#                               # @',
+                        '#                               ###',
+                        '#                               #',
+                        '#  <  >       <  >      <  >   ##',
+                        '#%         ####       #         #',
+                        '#                               #',
+                        '#  T   #  ^^^^^^^^^^^^^^^       #',
+                        '#################################',], 
+                        //['text', x, y]
+                        text: [['Wait... They can fly???', 150, 300], ['UGHHH! NOT SPIKES AGAIN!', 500, 500], ['Anyways, where is the cure?', 1200, 100]], 
+                        sign: [,,,'Of course, your classic enemy!\nStay away from spikes.',,,,,,,,,,,,,,,,,,,,,,,,,,,,,'And also, each world makes your\nhealth run out at a different speed\nas you might\'ve noticed'],
+                        difficulty: 1/25
+                },
+                'And program!' : {
+                    name: 'LvL 4: The infected fight back',
+                        world: [
+                        '#',
+                        '# %',
+                        '#                        @',
+                        '#                        #',
+                        '#              <<   <<   #',
+                        '#              <<   <<   #',
+                        '#              <<   <<   #',
+                        '#      T 1 #   <<   << T #',
+                        '##########################',], 
+                        //['text', x, y]
+                        text: [['So much viruses!\n How am I supposed to win ??', 150, 400], ['Haha! Take that, viruses!', 800, 400]], 
+                        sign: [,,,,,,,'What are those... Pills?\nA shotgun style virus killer?\nThey look like they could help!\nClick to shoot!',,,,,,,,,,,,,,,,'Did you know?\nShotguns have lots of recoil.'],
+                        difficulty: 1/20
+                },
+                'That\'s it for the easter eggs' : {
+                    name: 'LvL 5: Up',
+                        world: [
+                        '#         #',
+                        '#         #',
+                        '#         #',
+                        '#         #',
+                        '#<    <  @#',
+                        '#        ##',
+                        '#         #',
+                        '#         #',
+                        '#<    <   #',
+                        '#         #',
+                        '#        ##',
+                        '#         #',
+                        '#<    <   #',
+                        '#         #',
+                        '# %       #',
+                        '#        ##',
+                        '#         #',
+                        '#         #',
+                        '#         #',
+                        '#   T 1   #',
+                        '###########',], 
+                        //['text', x, y]
+                        text: [['But... I\'m afraid of heights ;-;', 150, 400], ['What if I fall off? O-O', 150, 0]], 
+                        sign: [,,,,'Unfortunately, because of\n Schrochinger\'s Wave Equation,\nthe Laplace Transform,\nand the Riemann Hypothesis,\nGuns don\'t make it through the portal'],
+                        difficulty: 1/15
+                },
+                'If u see this for some reason comment ####' : {
+                    name: 'LvL 6: I must be dreaming...',
+                        world: [
+                        '#',
+                        '# %',
+                        '#                 <       ',
+                        '#                <<<      ',
+                        '#               <<<<<    @',
+                        '#              << < <<   #',
+                        '#              <<<<<<<   #',
+                        '#               < < <    #',
+                        '#      T 1     <     < T #',
+                        '##########################',], 
+                        //['text', x, y]
+                        text: [['What the...????\nWhat am I seeing??', 150, 400], ['Oof! That scared me!', 800, 400]], 
+                        sign: [,,,,,,,'Gotta act fast!',,,,,,,,,,,,,,,,'Space Invaders?\nPhew. That was close.'],
+                        difficulty: 1/15
+                },
+                'Then we can chat about...' : {
+                    name: 'LvL 7: Skyfall',
+                        world: [
+                        '#',
+                        '# %',
+                        '#                        @',
+                        '#                        #',
+                        '#     <<       <<   <<   #',
+                        '#              <<   <<## #',
+                        '#         ##     ##      #',
+                        '#  T   #                 #',
+                        '#######                   ',], 
+                        //['text', x, y]
+                        text: [['*SIGH* No gun again...', 150, 400], ['No cure.\nOkay. I\'ll just have to keep searching', 800, 400]], 
+                        sign: [,,,'Don\'t fall off!'],
+                        difficulty: 1/15
+                },
+                'Why u are reading my bad code' : {
+                    name: 'LvL 8: One Germ Two Germ Red Germ Blue Germ',
+                        world: [
+                        '                         @',
+                        '#                       ##',
+                        '# %                      #',
+                        '#                        #',
+                        '#                        #',
+                        '#                 &     ##',
+                        '#          ##    ##      #',
+                        '#                        #',
+                        '#    T #  * * * * * * * *#',
+                        '##########################',], 
+                        //['text', x, y]
+                        text: [['Eww, even more gross', 150, 400], ['OMG! TOILET PAPER?', 750, 350]], 
+                        sign: [,,,,,'As Dr.Seuss once said: \n\'One Germ Two Germ Red Germ Blue Germ\''],
+                        difficulty: 1/8
+                },
+                'Go read Bob Lyon\'s' : {
+                    name: 'LvL 9: $$$ BLING! $$$',
+                        world: [
+                        '#',
+                        '#',
+                        '#                         ',
+                        '#                         ',
+                        '#  <<            >>   <<   #',
+                        '#  <<            >>   <<   #',
+                        '#  <<            >>   <<   #',
+                        '#%     T &&# <<$ <<$  >>$ @#',
+                        '############################',], 
+                        //['text', x, y]
+                        text: [['UGH! That was 2 ply toilet paper.\n I ONLY USE 3 ply!', 200, 400], ['Ooooh Shiny!', 800, 400]], 
+                        sign: [,,,,,,,'As you just saw,\n toiler paper boosts your health! :D\nBut we have even better...\n3 ply golden toilet paper!',,,,,,,,,,,,,,,,'Did you know?\nShotguns have lots of recoil.'],
+                        difficulty: 1/15
+                },
+                'Or Xacer and JentGents 3D programs' : {
+                    name: 'LvL 10: Target Locked',
+                        world: [
+                        '#',
+                        '# %',
+                        '#                        @',
+                        '#              *         #',
+                        '#              *         #',
+                        '#              *        &#',
+                        '#          #   *        ##',
+                        '#      T 0 &#  *         #',
+                        '##########################',], 
+                        //['text', x, y]
+                        text: [['Oh NOT AGAIN! Snipers!', 150, 400], ['Get 360 NO SCOPED!', 800, 400]], 
+                        sign: [,,,,,,,'Bacteria are immune to pills\nYou\'ll need a high damage needle to win.'],
+                        difficulty: 1/15
+                },
+                'My code is bad.' : {
+                    name: 'LvL 11: 2FAST4U',
+                        world: [
+                        '#',
+                        '#  ',
+                        '# ****** ****** ****** **#',
+                        '#                        #',
+                        '#                        #',
+                        '#           $            #',
+                        '#                        #',
+                        '#####                    #',
+                        '#                     ####',
+                        '#% T        #           @#',
+                        '##########################',], 
+                        //['text', x, y]
+                        text: [['WHAT?? THIS IS IMPOSSIBLE!', 150, 400], ['IM USAIN BOLT', 800, 400]], 
+                        sign: [,,,'RUN!'],
+                        difficulty: 1/10
+                },
+                'STAY SAFE! :D' : {
+                    name: 'LvL 12: Diversion',
+                    world: [
+                        '#',
+                        '#  ',
+                        '#                         ',
+                        '#                         ',
+                        '#                        @',
+                        '#        %               #',
+                        '#               *        #',
+                        '#               *        #',
+                        '#            #  *        #',
+                        '#1> > >#   T0#  *      $ #',
+                        '##########################',], 
+                        //['text', x, y]
+                        text: [['Umm... why are there\nviruses on the left?', 350, 400], ['Ohh I see', 900, 400]], 
+                        sign: [,,,,,,,,,,,'Again, speed is key'],
+                        difficulty: 1/15
+                },
+                'Ok now stop.' : {
+                    name: 'LvL 13: Follow the flow',
+                        world: [
+                        '#',
+                        '#                     ',
+                        '#                     ',
+                        '#                     ',
+                        '#                    @',
+                        '#                    #',
+                        '#          <<<<<<<   #',
+                        '#          <<   <<   #',
+                        '#          <<   <<  *#',
+                        '#1$0       <<%  <<  ##',
+                        '#####  ##############',
+                        '#   ####           ',], 
+                        //['text', x, y]
+                        text: [['Which one to take...', 150, 400]],
+                        sign: [,,,'RUN!'],
+                        difficulty: 1/12
+                },
+                'Bye' : {
+                    name: 'LvL 14: I need a map',
+                        world: [
+                        '                         @',
+                        '                         #',
+                        '                         #', 
+                        '                         #',
+                        '                         #',
+                        '# %               #     *#',
+                        '#  T 0#  #       $#  $  *#',
+                        '# #####< #################',
+                        '# #####  #################',
+                        '#     # <#               #',
+                        '#     #  #               #',
+                        '#     #> #               #',
+                        '#     # ##               #',
+                        '#     # <#               #',
+                        '#     #  #    * *  * *   #',
+                        '##    #> #               #',
+                        '##^   &    #       $    1#',
+                        '##########################',],
+                        //['text', x, y]
+                        text: [['And underground\ncompartment...', 150, 400], ['Another cave...', 800, 400], ['This is taking too long.\nI\'m starting to worry.\nWhere is the cure??', 850, 0]], 
+                        sign: [,,,'This one might be quite tricky\nIf you\'re having trouble,\nGo to line 30 in the code.'],
+                        difficulty: 1/20
+                },
+                '' : {
+                    name: 'LvL 15: Entrance to the castle',
+                        world: [
+              '          #             *   ',
+              '          #             *   ',
+              '          #        *  # #   ',
+              '          #     *  *  #^#  #',
+              '###########     *  #  ###  #',
+              '# %  T     $0  $#^ # $ #  @#',
+              '############################',],
+                        //['text', x, y]
+                        text: [['BUT WHERE? IS THE CURE???\nI\'ve been to so many places already.\nI just can\'t find it', 200, 400], ['I\'m starting to have trouble breathing...\nI\'m not sure how much longer I can last',1000, 300]], 
+                        sign: [,,,,,'This is the entrance to the enemy castle\nYou are close! Don\'t give up hope!'],
+                        difficulty: 1/15
+                },
+                '   ' : {
+                    name: 'LvL 16: Final Showdown',
+                        world: [
+                '        #    #    #',
+                '        #   ***   #',
+                '        #  **@**  #',
+                '        #  *###*  #',
+                '        # *     * #',
+                '        #$        #',
+                '        #         #',
+                '        #         #',
+                '########### $ $ $ ##',
+                '#%0T       < <$<$<1#',
+                '####################',],
+                        //['text', x, y]
+                        text: [['I\'m dying... Where is the cure?', 150, 400], ['Oh no, I can\'t last much longer\nCan I make it in time?', 550, 100], ], 
+                        sign: [,,,'Finally...\nThis is the headquarters of the viruses\nThe cure should be close.\nBe careful, this place is heavily guarded'],
+                        difficulty: 1/10
+                },
+                '  ' : {
+                    name: 'Finale',
+                        world: [
+                        '#                                              #',
+                        '#                                              #',
+                        '#                                              #',
+                        '#                                              #',
+                        '#                                              #',
+                        '#%       T         T         T$$$      T     S #',
+                       '################################################',], 
+                        //['text', x, y]
+                        text: [['Oh. The sky is blue...\nDoes that mean anything?', 150, 400], ['I\'m so tired... Can\'t fight anymore...\nLuckily I don\'t see any enemies around', 600, 400],['But anyways. I\'m dying.\nWhere is the cure?\nI\'ve searched everywhere.', 1000, 400],['I see something ahead.....', 1400, 400],['So this is it. All along.\nThe cure for the virus.\nI\'m saved', 1800, 400]], 
+                        sign: [,,,,,,,,,'Yay! No school!\nStay home and program. :D',,,,,,,,,,'Remember to wash your hands!',,,,,,,,,,'No hoarding toilet paper ;)',,,,,,,,,,'And most importantly, stay safe! 👍'],
+                        difficulty: 0
+                },
+            };
+
+            var realMap = JSON.parse(JSON.stringify(maps));
+            var _map = maps[Object.keys(maps)[mapNum]].world;
+            
+            var guns = {
+                'needle': {
+                    name: 'Needle',
+                    count: 1,
+                    delay: 0.5,
+                    color: color(34, 255, 0),
+                    w: 20, 
+                    h: 5, 
+                    s: 12,
+                    draw: function(x, y, r, display){
+                        fill(255);
+                        stroke(0);
+                        pushMatrix();
+                            translate(x, y);
+                            if (display){
+                                scale(0.5);                                translate(-10, 5);
+                            }
+                            rotate(r);
+                            beginShape();
+                                vertex(0, -7);
+                                vertex(-10, -7);
+                                vertex(-10, -10);
+                                vertex(-10, -2);
+                                vertex(-20, -2);
+                                vertex(-20, -7);
+                                vertex(-22, -7);
+                                vertex(-22, 7);
+                                vertex(-20, 7);
+                                vertex(-20, 2);
+                                vertex(-10, 2);
+                                vertex(-10, 10);
+                                vertex(-10, 7);
+                                vertex(0, 7);
+                            endShape(CLOSE);
+                            fill(0, 255, 0);
+                            beginShape();
+                                vertex(0, 7);
+                                vertex(30, 7);
+                                vertex(30, 2);
+                                vertex(35, 2);
+                                vertex(35, 1);
+                                vertex(55, 1);
+                                vertex(55, -1);
+                                vertex(35, -1);
+                                vertex(35, -2);
+                                vertex(30, -2);
+                                vertex(30, -7);
+                                vertex(0, -7);
+                            endShape(CLOSE);
+                            line(5, 0, 5, 7);
+                            line(10, 0, 10, 7);
+                            line(15, 0, 15, 7);
+                            line(20, 0, 20, 7);
+                            line(25, 0, 25, 7);
+                        popMatrix();
+                    },
+                    bulletDraw: function(x, y, r){
+                        pushMatrix();
+                            translate(x + this.w/2, y + this.h/2);
+                            rotate(r);
+                            fill(this.color);
+                            rect(- this.w/2, -this.h/2, this.w, this.h);
+                        popMatrix();
+                    }
+                },
+                'pill' : {
+                    name: 'Pills',
+                    count: 1,
+                    delay: 1,
+                    color: color(255, 0, 0),
+                    w: 40, 
+                    h: 16, 
+                    s: 5,
+                    draw: function(x, y, r, display){
+                        stroke(0);
+                        pushMatrix();
+                        translate(x, y);
+                        if (display){
+                            scale(0.7);
+                        }
+                        rotate(r);
+                        fill(255, 0, 0);
+                        rect(-20, -8, 20, 16, 10, 0, 0, 10);
+                        fill(255);
+                        rect(0, -8, 20, 16, 0, 10, 10, 0);
+                        popMatrix();
+                    },
+                    bulletDraw: function(x, y, r, c){
+                        stroke(0);
+                        pushMatrix();
+                        translate(x + this.w/2, y+ this.h/2);
+                        rotate(radians(r));
+                        fill(c);
+                        rect(- this.w/2, - this.h/2, 20, 16, 10, 0, 0, 10);
+                        fill(255);
+                        rect(20 - this.w/2, - this.h/2, 20, 16, 0, 10, 10, 0);
+                        popMatrix();
+                    }
+                }
+            };
+            
+            var ycollide = function(ax, ay, aw, ah, as, bx, by, bw, bh){
+                // # Check if two objects collide vertically
+                return (ax + aw > bx && ax < bx + bw && ((ay + ah >= by && ay + ah <= by + as) || (ay <= by + bh && ay >= by + bh + as)));
+            };
+            
+            var xcollide = function(ax, ay, aw, ah, bx, by, bw, bh){
+                // # Check if two objects collide horizontally
+                return (ax + aw > bx && ax < bx + bw && ay + ah > by && ay < by + bh);
+            };
+            
+            var ncollide = function(ax, ay, aw, ah, bx, by, bw, bh){
+                // # Check if two objects collide horizontally
+                return (ax + aw >= bx && ax <= bx + bw && ay + ah >= by && ay <= by + bh);
+            };
+            
+            var changeMap = function(i, n, x){
+                //changes the [i][n] position in the map array to x
+                var start = _map[i].substring(0, n);
+                var end = _map[i].substring(n + 1, _map[i].length);
+                _map[i] = start.concat(x, end);
+            };
+            
+            var bullets = [];
+            var bullet = function(x, y, r, gun, c, spin, b){
+                this.x = x;
+                this.y = y;
+                this.r = r;
+                this.b = b;
+                if (!this.b){
+                    this.gun = guns[Object.keys(guns)[gun]];
+                    this.c = c;
+                    this.ospin = spin;
+                    this.spin = spin;
+                }
+                else {
+                    this.gun = {
+                        w : 5,
+                        h: 5, 
+                        s: 5
+                    };
+                }
+            };
+            bullet.prototype = {
+                display: function(){
+                    if (this.b){
+                        fill(0, 0, 255);
+                        ellipse(this.x, this.y, 5, 5);
+                    }
+                    else{
+                        this.gun.bulletDraw(this.x, this.y, this.r + this.spin, this.c);
+                        this.spin += this.ospin;
+                    }
+                },
+                update: function(){
+                    this.x += this.gun.s* cos(this.r);
+                    this.y += this.gun.s* sin(this.r);
+                },
+                collide: function(i, n){
+                        if (ncollide(this.x, this.y, this.gun.w, this.gun.h, n * 40, height - (_map.length- i) * 40, 40, 40) && _map[i][n] !== ' ' && isNaN(_map[i][n])){
+                            return true;
+                        }
+                },
+                ecollide: function(x){
+                        if (ncollide(this.x, this.y, this.gun.w, this.gun.h, x.x, x.y, x.w, x.h)){
+                            return true;
+                        }
+                },
+                pcollide: function(x){
+                        if (ncollide(-20, -20 + height * 1/5, 40, 40, this.x - x.x, this.y - x.y, 5, 5)){
+                            return true;
+                        }
+                },
+                init: function(){
+                   this.update();
+                    this.display();
+                }
+            };
+            
+            var enemies = [];
+            
+            var enemy = function(x, y, d, p){
+                // # this.lvl = [type, level]
+                // # types 0 normal walk, 1 tracking, 2 sniping, 3 gunning
+                this.lvl = [0, 0];
+                this.color = d ? color(255, 0, 0) : color(0, 0, 255);
+                this.x = x;
+                this.y = y;
+                this.ny= this.y;
+                this.w = 40;
+                this.h = 40;
+                this.s = 2;
+                this.dir = d;
+                this.timer = 0;
+                this.p = p;
+            };
+            
+            enemy.prototype = {
+                display: function(){
+                    fill(this.color);
+                    stroke(0);
+                    if (this.p){
+                        this.timer ++;
+                        rect(this.x + this.w/4, this.y, this.w/2, this.h * 3/4, 50);
+                        for (var i = 0; i< 360; i += 15){
+                            var a = i*sin(radians(frameCount)) + 2*i;
+                            line(sin(radians(a))* 10 + 10 + this.x+ this.w/4, cos(radians(a))*15 + 15 + this.y, sin(radians(a))* 20 + 10 + this.x + this.w/4, cos(radians(a))* 30+ 15+ this.y);
+                        }
+                        if (this.timer > 50){
+                            bullets.push(new bullet(this.x + this.w/2, this.y + this.h/2, -atan2(player.x - this.x - this.w/2, height * 1/5 +  player.y - this.y - this.h/2) + 90 + random(-5, 5), 0, 0, 0, true));
+                            this.timer = 0;
+                        }
+                    }
+                    else{
+                        pushMatrix();
+                            translate(this.x + this.w/2, this.y + this.h/2);
+                            ellipse(0, 0, 40, 40);
+                            ellipse(0, 5, 4, 4);
+                            ellipse(-12, 2.5, 4, 4);
+                            ellipse(12, 2.5, 4, 4);
+                            ellipse(0, 16, 4, 4);
+                            ellipse(0, -11, 4, 4);
+                            ellipse(-10, -6.5, 4, 4);
+                            ellipse(-10, 10, 4, 4);
+                            ellipse(10, -6.5, 4, 4);
+                            ellipse(10, 10, 4, 4);
+                            for (var i = 0; i < 360; i+= 30){
+                                ellipse(cos(radians(i)) * 22, sin(radians(i))* 22, 4, 4);
+                            }
+                        popMatrix();
+                    }
+                },
+                update: function(){
+                    switch(this.lvl[0]){
+                        case 0:
+                            this.x += this.dir *this.s;
+                            this.y = this.ny + sin(radians(frameCount * 10)) *5;
+                    }
+                },
+                xcollide: function(i, n){
+                    if (xcollide(this.x, this.y, this.w, this.h, n * 40, height - (_map.length- i) * 40, 40, 40) && _map[i][n] === '#'){
+                            return true;
+                    }
+                },
+                init: function(){
+                    this.update();
+                    this.display();
+                }
+            };
+            
+            /**Particles**/ 
+                var particles = [];
+                var particle = function(x, y, s, a, c){
+                    this.x = x;
+                    this.y = y;
+                    this.c = c;
+                    this.s = s;
+                    this.a = a;
+                };
+                
+                particle.prototype.init = function(){
+                    fill(this.c);
+                    ellipse(this.x, this.y, this.s, this.s);
+                    
+                    this.x += this.s/2 * cos(radians(this.a));
+                    this.y += this.s/2 * sin(radians(this.a));
+                    
+                    this.s -= 1/2;
+                };
+            
+            // # A modulus function that ACTUALLY WORKS
+            // # (For negative numbers)
+            function mod(x, y){
+                if(x >= 0 || x / 40 % 1 === 0){
+                    return x % y;
+                }
+                else{
+                    return y + x % y;
+                }
+            }
+            
+            var popups = [];
+            // # Player Object
+            var player = {
+                x: width/2,
+                y: height/2,
+                w: 40,
+                h: 40,
+                xs: 0,
+                ys: 0,
+                ycollided: false,
+                xcollided: false,
+                canJ: true,
+                g: this.ycollided || 0.5,
+                gunNum: false,
+                delay: 0,
+                nextTimer: 0,
+                health: 100,
+                display: function(){
+                    fill(0, 255, 0);
+                    rect(width/2- this.w/2, height * 7/10 - this.h/2, this.w, this.h);
+                    if (this.gunNum !== false){
+                        this.gun = guns[Object.keys(guns)[this.gunNum]];
+                        this.gun.draw(width/2, height* 7/10, atan2(mouseY - height* 7/10, mouseX - width/2));
+                        if (clicked && this.delay >= this.gun.delay){
+                            if (this.gunNum === 1){
+                                for (var i in [0, 0, 0, 0, 0, 0, 0, 0]){
+                                    bullets.push(new bullet(this.x - this.gun.w/2, this.y + height * 1/5 - this.gun.h/2,  atan2(mouseY - height* 7/10+ this.h/2, mouseX - width/2- this.w/2) + random(radians(-30), radians(30)), this.gunNum, random(0, 1) < 1/3 ? color(255, 0, 0): random(0, 1) < 1/2 ? color (0, 0, 255): color(0, 255, 0), random(0, 2) < 1 ? random(-5, -2): random(2, 5), 0, false));
+                                }
+                                this.ys += -5 * sin(atan2(mouseY - height* 7/10+ this.h/2, mouseX - width/2- this.w/2));
+                            }
+                            else {
+                            bullets.push(new bullet(this.x - this.gun.w/2, this.y + height * 1/5- this.gun.h/2,  atan2(mouseY - height* 7/10, mouseX - width/2), this.gunNum, this.gun.color, 0, false));
+                            }
+                            this.delay = 0;
+                        }
+                        this.delay += 0.01;
+                    }
+                },
+                update: function(){
+                    // # Changes the speed
+                    if ((input.code(87) || input.code(38)) && this.canJ){
+                        this.ys -= 14;
+                        this.g = 1;
+                        this.canJ = false;
+                    }
+                    if ((input.code(68) || input.code(39)) && this.xs < 5 && this.xcollided !== 'right'){
+                        this.xs += 0.5;
+                    }
+                    else if ((input.code(65) || input.code(37))&& this.xs > -5 && this.xcollided !== 'left'){
+                        this.xs += -0.5;
+                    }
+                    else {
+                        if (this.xs > 0){
+                            this.xs -= 0.25;
+                        }
+                        else if (this.xs < 0){
+                            this.xs += 0.25;
+                        }
+                    }
+                    this.ys += this.g;
+                    
+                    // # Updates the player
+                    this.x += this.xs;
+                    this.y += this.ys;
+                },
+                collide: function(){
+                    this.ycollided = false;
+                    this.xcollided = false;
+                    for (var i = 0; i < _map.length; i++){
+                    for (var n = 0; n < _map[i].split('').length; n++){
+                            if (ycollide(width/2 - this.w/2, height * 7/10 - this.h/2, this.w, this.h, this.ys, n * 40 - this.x + width/2, height * 3/2 - (_map.length- i) * 40 - this.y, 40, 40) && _map[i][n] === '#'){
+                                this.ycollided = true;
+                                if (this.ys >= 0){
+                                    // # Updates player to nearest block to prevent stuck-ins
+                                    this.y -= mod(this.y - this.h/2, 40);
+                                    this.canJ = true;
+                                    this.ys = 0;
+                                    this.g = 0;
+                                }
+                                else {
+                                    this.y += 40 - mod(this.y- this.h/2, 40);
+                                    this.ys = 0;
+                                    this.g = 1;
+                                }
+                            }
+                            if (xcollide(width/2 - this.w/2, height* 7/10 - this.h/2, this.w, this.h, n * 40 - this.x + width/2, height * 3/2 - (_map.length- i) * 40 - this.y, 40, 40) && _map[i][n] === '#'){ 
+                                if (this.xs > 0){
+                                    this.x -=  (Math.abs(this.x) - this.w/2) % 40;
+                                    this.xs = 0;
+                                    this.xcollided = 'right';
+                                }
+                                else {
+                                    this.x += 40 - (Math.abs(this.x) - this.w/2) % 40;
+                                    this.xs = 0;
+                                    this.xcollided = 'left';
+                                }
+                            }
+                        }
+                    }
+                    if (!this.ycollided){
+                        this.g = 0.5;
+                        this.canJ = false;
+                    }
+                },
+                spawn: function(lvl){
+                    bullets = [];
+                    this.ys = 0;
+                    this.xs = 0;
+                    maps = JSON.parse(JSON.stringify(realMap));
+                    if (lvl > mapNum || (mapNum < 1 && this.health === 100)){
+                        popups.push([maps[Object.keys(maps)[lvl]].name, 500]);
+                    }
+                    mapNum = lvl;
+                    this.health = 100;
+                    _map = maps[Object.keys(maps)[mapNum]].world;           this.gunNum = false;
+                    enemies = [];
+                    for (var i = 0; i< _map.length; i++){
+                        for (var n = 0; n< _map[i].length; n++){
+                            switch(_map[i][n]){
+                                case '%':
+                                    this.x = n * 40 + this.w/2;
+                                    this.y = height - (_map.length - i + 2)* 40 - player.h/2;
+                                    changeMap(i, n, ' ');
+                                break;
+                                case '>':
+                                    enemies.push(new enemy(n * 40, height - (_map.length - i)* 40 - 5, 1));    
+                                    changeMap(i, n, ' ');
+                                break;
+                                case '<':
+                                    enemies.push(new enemy(n * 40, height - (_map.length - i)* 40 - 5, -1));    
+                                    changeMap(i, n, ' ');
+                                break;
+                                case '*':
+                                    enemies.push(new enemy(n * 40, height - (_map.length - i)* 40 - 5, 0, this));
+                            }
+                        }
+                    }
+                },
+                interact: function(){
+                    var pastTimer = this.nextTimer;
+                    for (var i = 0; i < _map.length; i++){
+                    var broken = false;
+                    for (var n = 0; n < _map[i].split('').length; n++){
+                        if (ncollide(width/2 - this.w/2, height* 7/10 - this.h/2, this.w, this.h, n * 40 - this.x + width/2, height * 3/2 - (_map.length- i) * 40 - this.y, 40, 40) && _map[i][n] !== ' '){
+                            var x = n * 40 + - player.x + width/2;
+                            var y = height - (_map.length- i) * 40 + - player.y + height/2;
+                            if (!isNaN(_map[i][n])){
+                                fill(0);
+                                text('F to get ' + guns[Object.keys(guns)[Number(_map[i][n])]].name, x+ 20, y- 20 - abs(sin(radians(frameCount * 3)))* 5);
+                                triangle(x + 15, y- 10, x+ 25, y- 10, x+ 20, y- 5);
+                                if (input.code(70)){
+                                    this.gunNum = Number(_map[i][n]);
+                                    changeMap(i, n, ' ');
+                                    this.delay = 0;
+                                }
+                            }
+                            else{
+                                switch(_map[i][n]){
+                                    case 'T':
+                                        fill(0);
+                                        text('Sign', x + 20, y- 20 - abs(radians(sin(radians(frameCount * 3))))* 5);
+                                        triangle(x + 15, y- 10, x+ 25, y- 10, x+ 20, y- 5);
+                                            fill(123, 63, 0);
+                                            rect(width * 1/5, height * 4/5 - 10, width * 3/5, height * 1/5, 10);
+                                            stroke(0);
+                                            line(width * 1/5, height * 4/5, width * 1/5 + 100, height* 4/5);
+                                            line(width * 1/5, height * 4/5 + 20, width * 1/5 + 50, height* 4/5 + 20);
+                                            line(width * 4/5 - 100, height - 40, width * 4/5, height - 40);
+                                            line(width * 4/5 - 50, height - 20, width * 4/5, height - 20);
+                                            fill(255);
+                                            noStroke();
+                                            fill(255);
+                                            textFont(createFont('consolas'), 20);
+                                            text(maps[Object.keys(maps)[mapNum]].sign[n], width * 1/2, height * 9/10 - 10);
+                                            textFont(createFont('arial'), 12);
+                                    
+                                    break;
+                                    case '@':
+                                        if(ncollide(width/2 - this.w/2 + 5, height* 7/10 - this.h/2 + 5, this.w - 10, this.h - 10, n * 40 - this.x + width/2, height * 3/2 - (_map.length- i) * 40 - this.y, 40, 40)){
+                                            this.nextTimer ++;
+                                            fill(255, this.nextTimer * 255/40);
+                                            noStroke();
+                                            rect(0, 0, width, height);
+                                            if (this.nextTimer > 50){
+                                                this.nextTimer = 0;
+                                                this.spawn(mapNum + 1);
+                                                broken = true;
+                                            }
+                                        }
+                                    break;
+                                    case '^':
+                                        this.health -= 50;
+                                        this.ys += 20 * sin(atan2(height * 7/10 - this.h/2 - y, width/2- this.w/2 - x));
+                                        this.xs *= -1;
+                                        if (this.health <= 0){
+                                            this.spawn(mapNum);
+                                            popups.push(['Too sharp!', 500]);
+                                        }
+                                    break;
+                                    case '&':
+                                        changeMap(i, n, ' ');
+                                        this.health += 25;
+                                        if (this.health > 100){
+                                            this.health = 100;
+                                        }
+                                    break;
+                                    case '$':
+                                        changeMap(i, n, ' ');
+                                        this.health += 50;
+                                        if (this.health > 100){
+                                            this.health = 100;
+                                        }
+                                    break;
+                                    case 'S':
+                                        transition = 3;
+                                }
+                            }
+                            if (broken){
+                                break;
+                            }
+                        }
+                        if (broken){
+                            break;
+                        }
+                    }
+                    }
+                    if (this.nextTimer === pastTimer){
+                        this.nextTimer = 0;
+                    }
+                },
+                init: function(){
+                    this.update();
+                    this.collide();
+                    this.display();
+                    this.interact();
+                }
+            };
+
+            var rain = [];
+            player.spawn(mapNum);
+
+            var game = function() {
+                if (mapNum === Object.keys(maps).length - 1){
+                    background(135, 206, 235);       
+                    for (var i = 0; i< 360; i+= 45){
+                        pushMatrix();
+                            translate(100 - player.x/30, 100);
+                            rotate(i+ frameCount % 360);
+                            scale(abs(sin(radians(frameCount)))/4 + 1);
+                            fill(255, 204, 0, 100);
+                            triangle(50, 0, 100, -20, 100, 20);
+                        popMatrix();
+                    }
+                    fill(255, 204, 0);
+                    ellipse(100 - player.x/30, 100, 100, 100);
+                }
+                else{
+                    background(120, 102, 120);
+                    noStroke();
+                    rain.push([random(player.x - width*3/4, player.x + width*3/4), player.y - height * 3/4, random(5, 10)]);
+                    var f = frameCount % 300;
+                    if (f % 2 === 0 && f < 13){
+                        background(255);
+                    }
+                }
+
+                pushMatrix();
+                    // # Translates the map the opposite direction of where the player is going
+                    translate(Math.round(- player.x + width/2), Math.round(- player.y + height/2));
+                    if (mapNum !== Object.keys(maps).length - 1){
+                    for (var i = 0; i< rain.length; i++){
+                        fill(0, 0, 255, 100 + rain[i][2] *10);
+                        rect(rain[i][0], rain[i][1], 2, 10);
+                        rain[i][1] += rain[i][2];
+                        if (rain[i][1] > player.y + height * 3/4){
+                            rain.splice(i, 1);
+                            i--;
+                        }
+                    }
+                    }
+                    for (var i in particles){
+                        particles[i].init();
+                        if (particles[i].s <= 0){
+                            particles.splice(i, 1);
+                            i--;
+                        }
+                    }
+                    // # Draws the map
+                    for (var i = 0; i < _map.length; i++){
+                        for (var n = 0; n < _map[i].split('').length; n++){
+                            var x = n * 40;
+                            var y = height - (_map.length- i) * 40;
+                            noStroke();
+                            if (!isNaN(_map[i][n]) && _map[i][n] !== ' '){
+                                fill(145, 135, 135);
+                                quad(x + 10, y + 40, x+ 30, y+ 40, x+ 25, y+ 35, x+ 15, y+ 35);
+                                fill(guns[Object.keys(guns)[_map[i][n]]].color, Math.abs(sin(radians(frameCount)))* 100 + 100);
+                                ellipse(x+ 20, y+ 20 - Math.abs(sin(radians(frameCount)))*5, abs(sin(radians(frameCount)))* 25 + 5, abs(sin(radians(frameCount)))* 25 + 5);
+                                guns[Object.keys(guns)[_map[i][n]]].draw(x + 20, y+ 20 - Math.abs(sin(radians(frameCount)))*5, -30, true);
+                            }
+                            else if (_map[i][n] === 'T'){
+                                fill(123, 63, 0);
+                                rect(x, y, 40, 30);
+                                fill(97, 28, 28);
+                                rect(x+ 15, y+ 30, 10, 10);
+                                textAlign(CENTER, CENTER);
+                                fill(0);
+                                text('####', x+ 20, y+ 15);
+                            }
+                            else if (_map[i][n] === '^'){
+                                fill(71, 63, 71);
+                                triangle(x + 20, y, x, y+ 40, x+ 40, y+ 40);
+                            }
+                            else if (_map[i][n] === '@'){
+                                colorMode(HSB);
+                                fill(frameCount % 255, 255, 255);
+                                for (var l = 0; l< 3; l++){
+                                    particles.push(new particle(x+ 20, y+ 20, random(5, 10), random(0, 360), color(frameCount % 255, 255, 255)));
+                                }
+                                pushMatrix();
+                                    translate(x + 20, y+ 20);
+                                    scale(abs(sin(radians(frameCount)))/4 + 0.75);
+                                    rotate((frameCount % 60) * 6);
+                                    ellipse(0, 0, 35, 40);
+                                popMatrix();
+                            }
+                            else if (_map[i][n] === '&'){
+                                stroke(0, 100);
+                                fill(255);
+                                rect(x + 2, y + 10 - abs(sin(radians(frameCount * 3)))* 5 - 2 , 35, 30, 0, 0, 60, 100);
+                                fill(245, 235, 235);
+                                ellipse(x + 20, y + 10 - abs(sin(radians(frameCount * 3)))* 5 - 2, 35, 20);
+                                fill(0, 0, 0);
+                                ellipse(x+ 20, y + 10 - abs(sin(radians(frameCount * 3)))* 5 -2, 15, 7.5);
+
+                            }
+                            else if (_map[i][n] === '$'){
+                                stroke(0, 100);
+                                fill(255, 215, 0);
+                                rect(x + 2, y + 10 - abs(sin(radians(frameCount * 3)))* 5 - 2 , 35, 30, 0, 0, 60, 100);
+                                fill(217, 181, 3);
+                                ellipse(x + 20, y + 10 - abs(sin(radians(frameCount * 3)))* 5 - 2, 35, 20);
+                                fill(192, 192, 192);
+                                ellipse(x+ 20, y + 10 - abs(sin(radians(frameCount * 3)))* 5 -2, 15, 7.5);
+
+                            }
+                            else if (_map[i][n] === 'S'){
+                                pushMatrix();
+                                    translate(x + 20, y + 20);
+                                    rotate(-30);
+                                    fill(220, 208, 205);
+                                    rect(-20, -25 + 5* abs(sin(radians(frameCount * 3))), 40, 30, 10);
+                                    textSize(13);
+                                    fill(158, 145, 142);
+                                    text('SOAP', 0, - 10 + 5* abs(sin(radians(frameCount * 3))));
+                                    for (var l = 0; l< 3; l++){
+                                    particles.push(new particle(x+ 20, y + 10 + 5* abs(sin(radians(frameCount * 3))), random(5, 10), random(0, 360), color(220, 208, 205)));
+                                }
+                                popMatrix();
+                            }
+                            else{
+                                switch(_map[i][n]){
+                                    default:
+                                        noFill();
+                                    break;
+                                    case '#': 
+                                        fill(0);
+                                    break;
+                                          
+                                }
+                                rect(x, y, 40, 40);
+                            }
+                            colorMode(RGB);
+                        }
+                    }
+                    for (var i = 0; i< maps[Object.keys(maps)[mapNum]].text.length; i++){
+                        textSize(15);
+                        fill(0);
+                        text(maps[Object.keys(maps)[mapNum]].text[i][0], maps[Object.keys(maps)[mapNum]].text[i][1], maps[Object.keys(maps)[mapNum]].text[i][2]);
+                    }
+                    for (var z = 0; z < enemies.length; z ++){
+                    enemies[z].init();
+                        for (var i = 0; i < _map.length; i++){
+                            for (var n = 0; n < _map[i].split('').length; n++){
+                                if (enemies[z].xcollide(i, n)){
+                                    if (n * 40 > enemies[z].x){
+                                        enemies[z].dir = -1;
+                                    }
+                                    else{
+                                        enemies[z].dir = 1;
+                                    }
+
+                                }
+
+                            }
+                        }
+                        if (ncollide(enemies[z].x - player.x + width/2, enemies[z].y - player.y + height/2, enemies[z].w - 10, enemies[z].h - 10, width/2 - player.w/2, height * 7/10 - player.h/2, player.w, player.h)){
+                            for (var i = 0; i< 20; i++){
+                                particles.push(new particle(enemies[z].x, enemies[z].y, random(5, 10), random(0, 360), color(random(0, 255), random(0, 255), 0)));
+                            }
+                            player.health -= 30;
+                            enemies.splice(z, 1);
+                            z--;
+                        }
+                    }
+                    for (var x = 0; x < bullets.length; x ++){
+                        bullets[x].init();
+                        for (var i = 0; i < _map.length; i++){
+                            var nowL = bullets.length;
+                            for (var n = 0; n < _map[i].split('').length; n++){
+                                if (bullets[x].collide(i, n) && _map[i][n] === '#'){
+                                    bullets.splice(x, 1);
+                                    break;
+                                }
+                                else if (bullets[x].collide(i, n ) && _map[i][n] === '^'){
+                                    bullets.splice(x, 1);
+                                    break;
+                                }
+                            }
+                            if (nowL !== bullets.length){
+                                x-= nowL - bullets.length;
+                                break;
+                            }
+                        }
+                    }
+                    for (var x = 0; x < bullets.length; x ++){
+                        if (bullets[x].pcollide(player) && bullets[x].b){
+                            player.health -= 10;
+                            bullets.splice(x, 1);
+                            x--;
+                            break;
+                        }
+                        for (var m = 0; m < enemies.length; m++){
+                            if (bullets[x].ecollide(enemies[m]) && !bullets[x].b && ((enemies[m].p && bullets[x].gun.name === 'Needle') || !enemies[m].p)){
+                                for (var i = 0; i< 20; i++){
+                                    particles.push(new particle(enemies[m].x, enemies[m].y, random(5, 10), random(0, 360), color(random(0, 255), random(0, 255), 0)));
+                                }
+                                enemies.splice(m, 1);
+                                m--;
+                                bullets.splice(x, 1);
+                                x--;
+                                break;
+                            }
+                        }
+                    }
+                popMatrix();
+                if (player.health <= 0 || player.y > height * 2){
+                    if (player.health <= 0){
+                        popups.push(['You died of infection', 500]);
+                    }
+                    else{
+                        popups.push(['You fell to death', 500]);
+                    }
+                    player.gunNum = false;
+                    player.spawn(mapNum);
+                }
+                noStroke();
+                fill(0, 100);
+                rect(width * 1/5, 10, width * 3/5, width* 1/10, 10);
+                fill(0);
+                rect(width * 1/5 + 10, 20, width * 3/5- 20, width* 1/10 - 20, 10);
+                fill(255, 0, 0, 200);
+                rect(width * 1/5 + 10, 20, player.health * (width * 3/5- 20)/100, width* 1/10 - 20, 10, 0, 0, 10);
+                fill(255);
+                text('Health: '+ Math.round(player.health) + '%', width/2, 50);
+                for (var i = 0; i< 40; i++){
+                    fill(0);
+                    var s = random(5, 10);
+                    ellipse(width * 1/5 + 10 + player.health * (width * 3/5- 20)/100 + random(-5, 0), random(22.5, 72.5), s, s);
+                }
+                player.health -= maps[Object.keys(maps)[mapNum]].difficulty;
+                for (var i = 0; i< popups.length; i++){
+                    fill(0, popups[i][1]* 2/3);
+                    rect(0, popups[i][1] >= 300 ? 300: popups[i][1] , width, 50);
+                    textSize(30);
+                    fill(255, popups[i][1]* 2);
+                    text(popups[i][0], width/2, popups[i][1] >= 300 ? 325 : popups[i][1]+25);
+                    popups[i][1] -= 5;
+                    if (popups[i][1] < 0){
+                        popups.splice(i, 1);
+                        i --;
+                    }
+                }
+                textSize(15);
+                player.init();
+                if (player.health < 20){
+                    fill(255, 0, 0, 120 - player.health * 5);
+                    rect(0, 0, width, height);
+                }
+                if (input.code(82)){
+                    player.spawn(mapNum);
+                }
+            };
+            
+            var time = 0;
+            
+            var gas = [];
+            for (var i = 0; i< 360; i++){
+                gas.push([i, random(200, 350)]);
+            }
+            draw = function(){
+                textAlign(CENTER, CENTER);
+                switch(transition){
+                    case 0:
+                        textSize(20);
+                        background(255);
+                        fill(255, 0, 0);
+                        text('DISCLAIMER:\n\nThis program is is completely fictional and just for fun. \nIt in no ways should or was meant to influence \nany negative thoughts related to the COVID-19 pandemic\nActually, it was made to promote positive thoughts and spread awareness!\n\nClick to acknowledge and continue >>', width/2, height/2);
+                        if (clicked){
+                            transition  = 1;
+                        }
+                    break;
+                    case 1:
+                        background(0);
+                        fill(255, 0, 0);
+                        textFont(createFont('Calibri'), 100);
+                        stroke(0);
+                        text('INFECTED', width/2,  height * 1/5);
+                       
+                        for (var i= 0; i < gas.length; i++){
+                            noStroke();
+                            fill(255, 0, 0, gas[i][1]/5);
+                            ellipse(width/2 + cos(gas[i][0]) * gas[i][1], height/2 + sin(gas[i][0]) * gas[i][1], 50, 50);
+                        }
+                        stroke(0);
+                        fill(255, 0, 0);
+                        pushMatrix();
+                            translate(132, 400 + sin(radians(frameCount)) * 10);
+                            scale(3);
+                            ellipse(0, 0, 40, 40);
+                            ellipse(0, 5, 4, 4);
+                            ellipse(-12, 2.5, 4, 4);
+                            ellipse(12, 2.5, 4, 4);
+                            ellipse(0, 16, 4, 4);
+                            ellipse(0, -11, 4, 4);
+                            ellipse(-10, -6.5, 4, 4);
+                            ellipse(-10, 10, 4, 4);
+                            ellipse(10, -6.5, 4, 4);
+                            ellipse(10, 10, 4, 4);
+                            for (var i = 0; i < 360; i+= 30){
+                                ellipse(cos(radians(i)) * 22, sin(radians(i))* 22, 4, 4);
+                            }
+                        popMatrix();
+                        pushMatrix();
+                            translate(189, 466 - sin(radians(frameCount)) * 10);
+                            scale(2);
+                            ellipse(0, 0, 40, 40);
+                            ellipse(0, 5, 4, 4);
+                            ellipse(-12, 2.5, 4, 4);
+                            ellipse(12, 2.5, 4, 4);
+                            ellipse(0, 16, 4, 4);
+                            ellipse(0, -11, 4, 4);
+                            ellipse(-10, -6.5, 4, 4);
+                            ellipse(-10, 10, 4, 4);
+                            ellipse(10, -6.5, 4, 4);
+                            ellipse(10, 10, 4, 4);
+                            for (var i = 0; i < 360; i+= 30){
+                                ellipse(cos(radians(i)) * 22, sin(radians(i))* 22, 4, 4);
+                            }
+                        popMatrix();
+                        pushMatrix();
+                            fill(0, 0, 255);
+                            translate(620, 100);
+                            rotate(30);
+                            scale(2);
+                            rect(0, 0, 30, 50, 50);
+                            stroke(0, 0, 255);
+                            for (var i = 0; i< 360; i += 15){
+                                var a = i*sin(radians(frameCount)) + 2*i;
+                                line(sin(radians(a))* 15 + 15, cos(radians(a))*25 + 25, sin(radians(a))* 25 + 15 , cos(radians(a))* 35 + 25);
+                            }
+                        popMatrix();
+                        pushMatrix();
+                            fill(0, 0, 255);
+                            translate(654, 183);
+                            rotate(0);
+                            scale(1);
+                            rect(0, 0, 30, 50, 50);
+                            stroke(0, 0, 255);
+                            for (var i = 0; i< 360; i += 15){
+                                var a = i*sin(radians(frameCount)) + 2*i;
+                                line(sin(radians(a))* 15 + 15, cos(radians(a))*25 + 25, sin(radians(a))* 25 + 15 , cos(radians(a))* 35 + 25);
+                            }
+                        popMatrix();
+                        stroke(0);
+                        fill(0, 255, 0);
+                        pushMatrix();
+                            translate(557,469);
+                            rotate(- 15);
+                            rect(- 50, -50, 100, 100);
+                            fill(0);
+                            ellipse(- 20, -20, 10, 10);
+                            ellipse(20, -20, 10, 10);
+                            fill(255);
+                            rect(- 30, 0, 60, 40);
+                            line(-50, -10, -30, 0);
+                            line(50, -10, 30, 0);
+                            line(-50, 50, -30, 40);
+                            line(50, 50, 30, 40);
+                        popMatrix();
+                        pushMatrix();
+                            translate(605, 480);
+                            scale(2);
+                            rotate(-43);
+                            beginShape();
+                                vertex(0, -7);
+                                vertex(-10, -7);
+                                vertex(-10, -10);
+                                vertex(-10, -2);
+                                vertex(-20, -2);
+                                vertex(-20, -7);
+                                vertex(-22, -7);
+                                vertex(-22, 7);
+                                vertex(-20, 7);
+                                vertex(-20, 2);
+                                vertex(-10, 2);
+                                vertex(-10, 10);
+                                vertex(-10, 7);
+                                vertex(0, 7);
+                            endShape(CLOSE);
+                            fill(0, 255, 0);
+                            beginShape();
+                                vertex(0, 7);
+                                vertex(30, 7);
+                                vertex(30, 2);
+                                vertex(35, 2);
+                                vertex(35, 1);
+                                vertex(55, 1);
+                                vertex(55, -1);
+                                vertex(35, -1);
+                                vertex(35, -2);
+                                vertex(30, -2);
+                                vertex(30, -7);
+                                vertex(0, -7);
+                            endShape(CLOSE);
+                            line(5, 0, 5, 7);
+                            line(10, 0, 10, 7);
+                            line(15, 0, 15, 7);
+                            line(20, 0, 20, 7);
+                            line(25, 0, 25, 7);
+                        popMatrix();
+                        var s = {
+                            x: width/2 - 50,
+                            y: height * 1/2,
+                            l: 100,
+                            h: 50
+                        };
+                        fill(0);
+                        stroke(255, 0, 0);
+                        if (mouseX > s.x && mouseX < s.x + s.l && mouseY > s.y && mouseY < s.y + s.h){
+                            fill(255, 0, 0);
+                            if (clicked){
+                                transition = 2;
+                                textFont(createFont('Arial'));
+                            }
+                        }
+                        rect(s.x, s.y, s.l, s.h);
+                        stroke(0);
+                        textSize(20);
+                        fill(255);
+                        text('A strategy based platformer-shooter!', width/2, height * 1/5 + 50);
+                        text('Stay safe everyone!', width/2, height * 4/5 + 50);
+                        text('Play', width/2, height * 1/2 + 25);
+                    break;
+                    case 2:
+                        game();
+                    break;
+                    case 3:
+                        fill(255, time);
+                        rect(0, 0, width, height);
+                        time ++;
+                        fill(0, time);
+                        textSize(40);
+                        text('THE END', width/2, height/2);
+                }
+                clicked = false;
+            };
+            
+            mouseClicked = function(){
+                clicked = true;  
+            };
+        };
+
+        try {
+            main();
+        }
+        catch(e){
+            console.log(e);
+        }
+
+    }};
+
+    // Get the canvas that Processing-js will use
+    var canvas = document.getElementById("mycanvas"); 
+    var processingInstance = new Processing(canvas, sketchProc); 
+ </script>
+
+</html>
